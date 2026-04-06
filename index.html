@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NVIDIA Prompt Studio</title>
+    <meta
+      name="description"
+      content="Chat-style NVIDIA app with sign up, login, and saved history."
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="brand-lockup">
+            <div class="brand-mark">N</div>
+            <div>
+              <p class="eyebrow">NVIDIA Prompt Studio</p>
+              <h1>Chats</h1>
+            </div>
+          </div>
+          <button id="newChatButton" class="sidebar-button" type="button">+ New chat</button>
+        </div>
+
+        <div id="authNotice" class="sidebar-empty">
+          Sign in to create chats and save your history.
+        </div>
+
+        <div id="chatSidebar" class="chat-sidebar hidden">
+          <div id="chatList" class="chat-list"></div>
+        </div>
+      </aside>
+
+      <section class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Workspace</p>
+            <h2 id="chatTitle">New chat</h2>
+          </div>
+          <div class="topbar-actions">
+            <span id="statusPill" class="status-pill">Checking</span>
+            <button id="logoutButton" class="ghost hidden" type="button">Log out</button>
+          </div>
+        </header>
+
+        <section id="authView" class="auth-card">
+          <div>
+            <p class="eyebrow">Account</p>
+            <h3 id="authHeading">Create your account</h3>
+            <p class="auth-copy">
+              Sign up or log in to save every prompt and response, then load older chats from the
+              sidebar.
+            </p>
+          </div>
+
+          <div class="auth-toggle" role="tablist" aria-label="Auth mode">
+            <button id="signUpTab" class="auth-tab active" type="button">Sign up</button>
+            <button id="signInTab" class="auth-tab" type="button">Log in</button>
+          </div>
+
+          <form id="authForm" class="auth-form">
+            <label class="field" for="emailInput">
+              <span>Email</span>
+              <input id="emailInput" type="email" autocomplete="email" required />
+            </label>
+
+            <label class="field" for="passwordInput">
+              <span>Password</span>
+              <input id="passwordInput" type="password" autocomplete="current-password" required />
+            </label>
+
+            <button id="authSubmit" class="primary" type="submit">Create account</button>
+          </form>
+        </section>
+
+        <section id="chatView" class="chat-view hidden">
+          <div class="session-bar">
+            <div>
+              <p class="label">Signed in as</p>
+              <p id="userEmail" class="session-copy">Not signed in</p>
+            </div>
+            <div class="session-meta">
+              <span id="modelBadge" class="meta-pill">Model unknown</span>
+            </div>
+          </div>
+
+          <section id="messageList" class="message-list">
+            <div class="empty-thread">
+              <h3>Start a new conversation</h3>
+              <p>Ask something, then your messages and responses will be saved in your history.</p>
+            </div>
+          </section>
+
+          <form id="composerForm" class="composer-shell">
+            <div class="composer-toolbar">
+              <div class="mode-grid" role="radiogroup" aria-label="Prompt mode">
+                <button class="mode-chip active" data-mode="brainstorm" type="button">Brainstorm</button>
+                <button class="mode-chip" data-mode="summarize" type="button">Summarize</button>
+                <button class="mode-chip" data-mode="email" type="button">Draft Email</button>
+                <button class="mode-chip" data-mode="code" type="button">Code Helper</button>
+              </div>
+              <button id="sampleButton" class="ghost small-button" type="button">Use sample</button>
+            </div>
+
+            <p id="modeDescription" class="mode-description">
+              Turn a rough idea into an MVP concept, target users, and action plan.
+            </p>
+
+            <label class="composer-input" for="prompt">
+              <textarea id="prompt" rows="4" placeholder="Message NVIDIA Prompt Studio"></textarea>
+            </label>
+
+            <div class="composer-footer">
+              <p id="charCount" class="meta-text">0 characters</p>
+              <div class="composer-actions">
+                <button id="copyButton" class="ghost small-button" type="button">Copy last answer</button>
+                <button id="runButton" class="send-button" type="submit" aria-label="Send message">
+                  Send
+                </button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <p id="status" class="status-copy">Loading application.</p>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "nvidia-api-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small NVIDIA API demo app with a local Node server and browser UI.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NVIDIA Idea Studio</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">NVIDIA API starter</p>
+        <h1>Idea Studio</h1>
+        <p class="subtitle">
+          A tiny local app powered by an NVIDIA API key. Paste a rough prompt, choose a mode,
+          and turn it into something useful.
+        </p>
+      </section>
+
+      <section class="panel controls">
+        <div class="mode-grid" role="radiogroup" aria-label="Prompt mode">
+          <button class="mode-chip active" data-mode="brainstorm" type="button">Brainstorm</button>
+          <button class="mode-chip" data-mode="summarize" type="button">Summarize</button>
+          <button class="mode-chip" data-mode="email" type="button">Draft Email</button>
+          <button class="mode-chip" data-mode="code" type="button">Code Helper</button>
+        </div>
+
+        <label class="field">
+          <span>Prompt</span>
+          <textarea id="prompt" rows="10" placeholder="Example: I want to build a small AI tool for shop owners that summarizes customer reviews and drafts reply suggestions."></textarea>
+        </label>
+
+        <div class="actions">
+          <button id="runButton" class="primary" type="button">Generate</button>
+          <button id="sampleButton" class="ghost" type="button">Use Sample</button>
+        </div>
+
+        <p id="status" class="status">Server not checked yet.</p>
+      </section>
+
+      <section class="panel output">
+        <div class="output-header">
+          <h2>Response</h2>
+          <span id="modelBadge" class="badge">Model unknown</span>
+        </div>
+        <pre id="result">Your response will show up here.</pre>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
