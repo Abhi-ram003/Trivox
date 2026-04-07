@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { generateChatCompletion, getPublicConfig, verifySupabaseUser } from "./lib/chat.js";
 
 const rootDir = process.cwd();
+const publicDir = join(rootDir, "public");
 loadEnv(join(rootDir, ".env"));
 
 const PORT = Number(process.env.PORT || 3000);
@@ -89,15 +90,16 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`NVIDIA demo app running at http://localhost:${PORT}`);
+  console.log(`Trivox running at http://localhost:${PORT}`);
 });
 
 function serveStatic(res, pathname) {
   const safePath = pathname === "/" ? "/index.html" : pathname;
   const normalizedPath = normalize(safePath).replace(/^(\.\.[/\\])+/, "");
-  const filePath = join(rootDir, normalizedPath);
+  const relativePath = normalizedPath.replace(/^[/\\]+/, "");
+  const filePath = join(publicDir, relativePath);
 
-  if (!filePath.startsWith(rootDir) || !existsSync(filePath)) {
+  if (!filePath.startsWith(publicDir) || !existsSync(filePath)) {
     sendText(res, 404, "Not found.");
     return;
   }

@@ -1,8 +1,8 @@
 {
-  "name": "nvidia-api-starter",
+  "name": "trivox",
   "version": "1.0.0",
   "private": true,
-  "description": "Small NVIDIA API demo app with a local Node server and browser UI.",
+  "description": "Trivox with Chat, Code, and Research bots powered by NVIDIA and Supabase.",
   "type": "module",
   "scripts": {
     "start": "node server.mjs"

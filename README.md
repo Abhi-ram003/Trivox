@@ -1,11 +1,18 @@
-# NVIDIA Prompt Studio
+# Trivox
 
-This project is a 3-bot NVIDIA app with:
+This project is a 3-bot AI app with:
 
 - sign up and login
 - per-user chat history
 - saved prompts and responses
 - three focused bots: Chat, Code, and Research
+
+## Repo structure
+
+- `public/` contains the frontend used by both local development and Vercel deployment
+- `api/` contains the serverless routes for Vercel
+- `lib/` contains shared NVIDIA and auth logic
+- `supabase/schema.sql` contains the database schema and policies
 
 ## Recommended NVIDIA models
 
