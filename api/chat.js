@@ -6,19 +6,10 @@ export default async function handler(request, response) {
     return;
   }
 
-  const nvidiaApiKey = process.env.NVIDIA_API_KEY || "";
-  const model = process.env.NVIDIA_MODEL || "meta/llama-3.1-8b-instruct";
   const supabaseUrl = process.env.SUPABASE_URL || "";
   const supabaseAnonKey =
     process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "";
   const accessToken = request.headers.authorization?.replace(/^Bearer\s+/i, "").trim() || "";
-
-  if (!nvidiaApiKey) {
-    response.status(500).json({
-      error: "Missing NVIDIA_API_KEY. Add it in your deployment environment variables.",
-    });
-    return;
-  }
 
   const user = await verifySupabaseUser({
     accessToken,
@@ -31,7 +22,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const mode = String(request.body?.mode || "brainstorm");
+  const mode = String(request.body?.mode || "chat");
   const prompt = String(request.body?.prompt || "").trim();
   const history = Array.isArray(request.body?.history) ? request.body.history : [];
 
@@ -42,8 +33,7 @@ export default async function handler(request, response) {
 
   try {
     const completion = await generateChatCompletion({
-      nvidiaApiKey,
-      model,
+      env: process.env,
       mode,
       prompt,
       history,

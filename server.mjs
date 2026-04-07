@@ -30,19 +30,10 @@ const server = createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/chat") {
-      const nvidiaApiKey = process.env.NVIDIA_API_KEY || "";
-      const model = process.env.NVIDIA_MODEL || "meta/llama-3.1-8b-instruct";
       const supabaseUrl = process.env.SUPABASE_URL || "";
       const supabaseAnonKey =
         process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "";
       const accessToken = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim() || "";
-
-      if (!nvidiaApiKey) {
-        sendJson(res, 500, {
-          error: "Missing NVIDIA_API_KEY. Add it to your .env file and restart the server.",
-        });
-        return;
-      }
 
       const user = await verifySupabaseUser({
         accessToken,
@@ -56,7 +47,7 @@ const server = createServer(async (req, res) => {
       }
 
       const body = await readJson(req);
-      const mode = String(body.mode || "brainstorm");
+      const mode = String(body.mode || "chat");
       const prompt = String(body.prompt || "").trim();
       const history = Array.isArray(body.history) ? body.history : [];
 
@@ -67,8 +58,7 @@ const server = createServer(async (req, res) => {
 
       try {
         const completion = await generateChatCompletion({
-          nvidiaApiKey,
-          model,
+          env: process.env,
           mode,
           prompt,
           history,

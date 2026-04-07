@@ -3,25 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NVIDIA Prompt Studio</title>
+    <title>Trivox</title>
     <meta
       name="description"
-      content="Chat-style NVIDIA app with sign up, login, and saved history."
+      content="Trivox with Chat, Code, and Research bots."
     />
     <link rel="stylesheet" href="/style.css" />
   </head>
-  <body>
+  <body class="auth-state">
     <main class="app-shell">
       <aside class="sidebar">
         <div class="sidebar-header">
           <div class="brand-lockup">
-            <div class="brand-mark">N</div>
             <div>
-              <p class="eyebrow">NVIDIA Prompt Studio</p>
-              <h1>Chats</h1>
+              <h1 class="sidebar-logo">TRIVOX</h1>
+              <p class="sidebar-tag">PRO MODEL</p>
             </div>
           </div>
-          <button id="newChatButton" class="sidebar-button" type="button">+ New chat</button>
+          <button id="newChatButton" class="sidebar-button" type="button">
+            <span class="sidebar-button-icon">✎</span>
+            <span>New Chat</span>
+          </button>
         </div>
 
         <div id="authNotice" class="sidebar-empty">
@@ -35,57 +37,63 @@
 
       <section class="main-panel">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">Workspace</p>
-            <h2 id="chatTitle">New chat</h2>
-          </div>
+          <h2 class="conversation-heading">Conversation Title: <span id="chatTitle">New chat</span></h2>
           <div class="topbar-actions">
-            <span id="statusPill" class="status-pill">Checking</span>
-            <button id="logoutButton" class="ghost hidden" type="button">Log out</button>
+            <span id="statusPill" class="status-pill">TRIVOX PRO</span>
+            <span id="modelBadge" class="meta-pill hidden">Model unknown</span>
+            <p id="userEmail" class="topbar-user hidden">Not signed in</p>
+            <button id="logoutButton" class="ghost hidden topbar-icon" type="button" aria-label="Log out">
+              ◌
+            </button>
           </div>
         </header>
 
-        <section id="authView" class="auth-card">
-          <div>
-            <p class="eyebrow">Account</p>
-            <h3 id="authHeading">Create your account</h3>
-            <p class="auth-copy">
-              Sign up or log in to save every prompt and response, then load older chats from the
-              sidebar.
-            </p>
+        <section id="authView" class="auth-page">
+          <div class="auth-brand">
+            <h1 class="auth-logo">TRIVOX</h1>
+            <p class="auth-tagline">PRO MODEL</p>
           </div>
 
-          <div class="auth-toggle" role="tablist" aria-label="Auth mode">
-            <button id="signUpTab" class="auth-tab active" type="button">Sign up</button>
-            <button id="signInTab" class="auth-tab" type="button">Log in</button>
+          <div class="auth-card">
+            <div class="auth-toggle" role="tablist" aria-label="Auth mode">
+              <button id="signInTab" class="auth-tab active" type="button">Log in</button>
+              <button id="signUpTab" class="auth-tab" type="button">Sign up</button>
+            </div>
+
+            <div class="auth-copy-block">
+              <h3 id="authHeading">Log in to Trivox</h3>
+              <p class="auth-copy">Access your saved conversations across Chat, Code, and Research.</p>
+            </div>
+
+            <form id="authForm" class="auth-form">
+              <label class="auth-field" for="emailInput">
+                <span>Email address</span>
+                <input id="emailInput" type="email" autocomplete="email" placeholder="name@archive.com" required />
+              </label>
+
+              <label class="auth-field" for="passwordInput">
+                <span>Password</span>
+                <input id="passwordInput" type="password" autocomplete="current-password" placeholder="••••••••" required />
+              </label>
+
+              <div class="auth-actions">
+                <a class="auth-link" href="#">Forgot?</a>
+                <button id="authSubmit" class="auth-submit" type="submit">Log in</button>
+              </div>
+            </form>
           </div>
 
-          <form id="authForm" class="auth-form">
-            <label class="field" for="emailInput">
-              <span>Email</span>
-              <input id="emailInput" type="email" autocomplete="email" required />
-            </label>
-
-            <label class="field" for="passwordInput">
-              <span>Password</span>
-              <input id="passwordInput" type="password" autocomplete="current-password" required />
-            </label>
-
-            <button id="authSubmit" class="primary" type="submit">Create account</button>
-          </form>
+          <footer class="auth-footer">
+            <span class="auth-footnote">© 2024 Trivox AI Archive</span>
+            <nav class="auth-footer-links">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Archive Access</a>
+            </nav>
+          </footer>
         </section>
 
         <section id="chatView" class="chat-view hidden">
-          <div class="session-bar">
-            <div>
-              <p class="label">Signed in as</p>
-              <p id="userEmail" class="session-copy">Not signed in</p>
-            </div>
-            <div class="session-meta">
-              <span id="modelBadge" class="meta-pill">Model unknown</span>
-            </div>
-          </div>
-
           <section id="messageList" class="message-list">
             <div class="empty-thread">
               <h3>Start a new conversation</h3>
@@ -94,31 +102,29 @@
           </section>
 
           <form id="composerForm" class="composer-shell">
-            <div class="composer-toolbar">
-              <div class="mode-grid" role="radiogroup" aria-label="Prompt mode">
-                <button class="mode-chip active" data-mode="brainstorm" type="button">Brainstorm</button>
-                <button class="mode-chip" data-mode="summarize" type="button">Summarize</button>
-                <button class="mode-chip" data-mode="email" type="button">Draft Email</button>
-                <button class="mode-chip" data-mode="code" type="button">Code Helper</button>
-              </div>
-              <button id="sampleButton" class="ghost small-button" type="button">Use sample</button>
-            </div>
-
-            <p id="modeDescription" class="mode-description">
-              Turn a rough idea into an MVP concept, target users, and action plan.
-            </p>
-
             <label class="composer-input" for="prompt">
-              <textarea id="prompt" rows="4" placeholder="Message NVIDIA Prompt Studio"></textarea>
+              <textarea id="prompt" rows="3" placeholder="Consult the AI..."></textarea>
             </label>
 
             <div class="composer-footer">
-              <p id="charCount" class="meta-text">0 characters</p>
+              <p id="modeDescription" class="mode-description">
+                Daily-use assistant for conversations, writing, and normal questions.
+              </p>
               <div class="composer-actions">
-                <button id="copyButton" class="ghost small-button" type="button">Copy last answer</button>
+                <button id="sampleButton" class="ghost small-button hidden" type="button">Use sample</button>
+                <button id="copyButton" class="ghost small-button hidden" type="button">Copy last answer</button>
+                <p id="charCount" class="meta-text hidden">0 characters</p>
                 <button id="runButton" class="send-button" type="submit" aria-label="Send message">
-                  Send
+                  ↗
                 </button>
+              </div>
+            </div>
+
+            <div class="composer-toolbar">
+              <div class="mode-grid" role="radiogroup" aria-label="Prompt mode">
+                <button class="mode-chip active" data-mode="chat" type="button">Chat Bot</button>
+                <button class="mode-chip" data-mode="code" type="button">Code Bot</button>
+                <button class="mode-chip" data-mode="research" type="button">Research Bot</button>
               </div>
             </div>
           </form>

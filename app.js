@@ -30,38 +30,32 @@ const runButton = document.querySelector("#runButton");
 const modeButtons = [...document.querySelectorAll(".mode-chip")];
 
 const samples = {
-  brainstorm:
-    "I want to build an AI tool for small restaurants that reads customer reviews, groups complaints by theme, and suggests simple menu or service improvements. Give me a product concept, target users, MVP features, and a 7-day launch plan.",
-  summarize:
-    "Summarize this text into five bullets and a short takeaway:\n\nNVIDIA APIs let developers prototype with hosted models for chat, retrieval, vision, and multimodal workflows. A small team can use one API key to test ideas quickly before committing to heavier infrastructure. The main tradeoff is that prototyping access is not the same as a production deployment plan, so teams should validate licensing, quotas, and costs before launch.",
-  email:
-    "Write a polite email to a client explaining that our AI prototype is ready for demo this Friday, and we would like 30 minutes to walk them through the main features.",
+  chat:
+    "Give me a clear explanation of how to start a small AI project, what stack to use first, and what I should build as a good portfolio demo.",
   code:
     "Create a simple Express route that accepts a POST body with { name } and returns { message: `Hello, ${name}` }. Also explain it line by line.",
+  research:
+    "Compare three ways to launch an AI project online: hosted API provider, self-hosting open models, and enterprise licensing. Give tradeoffs, costs, and which one is best for a solo builder.",
 };
 
 const modeMeta = {
-  brainstorm: {
-    description: "Turn a rough idea into an MVP concept, target users, and action plan.",
-    placeholder: "Describe a product idea, business workflow, or tool you want to build.",
-  },
-  summarize: {
-    description: "Paste long content and compress it into a short, useful summary.",
-    placeholder: "Paste notes, an article, or a long explanation you want summarized.",
-  },
-  email: {
-    description: "Draft a clearer message with context, tone, and your goal built in.",
-    placeholder: "Explain who the email is for, what it should say, and the tone you want.",
+  chat: {
+    description: "Daily-use assistant for conversations, writing, and normal questions.",
+    placeholder: "Ask for help with everyday tasks, writing, summaries, or general questions.",
   },
   code: {
-    description: "Ask for code, debugging help, or an implementation walkthrough.",
+    description: "Coding assistant for code generation, debugging, fixes, and explanations.",
     placeholder: "Describe the code you want, the bug you hit, or the feature you need help with.",
+  },
+  research: {
+    description: "Deep research assistant for harder questions, comparisons, and structured analysis.",
+    placeholder: "Ask a harder question that needs careful reasoning, comparison, or deeper analysis.",
   },
 };
 
 const state = {
-  activeMode: "brainstorm",
-  authMode: "signUp",
+  activeMode: "chat",
+  authMode: "signIn",
   config: null,
   supabase: null,
   session: null,
@@ -72,8 +66,8 @@ const state = {
   isSending: false,
 };
 
-setActiveMode("brainstorm");
-setAuthMode("signUp");
+setActiveMode("chat");
+setAuthMode("signIn");
 updateCharacterCount();
 bindEvents();
 initializeApp();
@@ -94,7 +88,7 @@ function bindEvents() {
   composerForm.addEventListener("submit", handleSendMessage);
 
   for (const button of modeButtons) {
-    button.addEventListener("click", () => setActiveMode(button.dataset.mode || "brainstorm"));
+    button.addEventListener("click", () => setActiveMode(button.dataset.mode || "chat"));
   }
 
   chatList.addEventListener("click", async (event) => {
@@ -118,12 +112,15 @@ async function initializeApp() {
     const config = await response.json();
 
     state.config = config;
-    modelBadge.textContent = config.model || "Unknown model";
+    const defaultProvider = config.providers?.chat?.provider || "nvidia";
+    const defaultModel = config.providers?.chat?.model || config.model || "Unknown model";
+    modelBadge.textContent = `${defaultProvider} / ${defaultModel}`;
     applyHealthStatus(config);
+    setActiveMode(state.activeMode);
 
     if (!config.supabaseConfigured || !config.supabaseUrl || !config.supabaseAnonKey) {
       statusText.textContent =
-        "Supabase is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY first.";
+        "Supabase is not configured yet. Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY first.";
       disableAuthAndChat();
       return;
     }
@@ -158,6 +155,7 @@ async function applySession(session) {
   state.user = session?.user || null;
 
   if (!state.user) {
+    document.body.classList.add("auth-state");
     authView.classList.remove("hidden");
     chatView.classList.add("hidden");
     authNotice.classList.remove("hidden");
@@ -173,9 +171,11 @@ async function applySession(session) {
     statusText.textContent = state.config?.supabaseConfigured
       ? "Create an account or log in to save chats."
       : statusText.textContent;
+    statusText.classList.remove("hidden");
     return;
   }
 
+  document.body.classList.remove("auth-state");
   authView.classList.add("hidden");
   chatView.classList.remove("hidden");
   authNotice.classList.add("hidden");
@@ -183,6 +183,7 @@ async function applySession(session) {
   logoutButton.classList.remove("hidden");
   userEmail.textContent = state.user.email || "Signed in";
   statusText.textContent = "Signed in. Your chats are stored in Supabase.";
+  statusText.classList.add("hidden");
 
   await loadChats();
 }
@@ -193,8 +194,8 @@ function setAuthMode(mode) {
 
   signUpTab.classList.toggle("active", isSignUp);
   signInTab.classList.toggle("active", !isSignUp);
-  authHeading.textContent = isSignUp ? "Create your account" : "Log in to your account";
-  authSubmit.textContent = isSignUp ? "Create account" : "Log in";
+  authHeading.textContent = isSignUp ? "Create your account" : "Log in to Trivox";
+  authSubmit.textContent = isSignUp ? "Create account" : "Sign In";
   passwordInput.autocomplete = isSignUp ? "new-password" : "current-password";
 }
 
@@ -203,6 +204,7 @@ async function handleAuthSubmit(event) {
 
   if (!state.supabase) {
     statusText.textContent = "Supabase is not configured yet.";
+    statusText.classList.remove("hidden");
     return;
   }
 
@@ -211,11 +213,12 @@ async function handleAuthSubmit(event) {
 
   if (!email || !password) {
     statusText.textContent = "Email and password are required.";
+    statusText.classList.remove("hidden");
     return;
   }
 
   authSubmit.disabled = true;
-  authSubmit.textContent = state.authMode === "signUp" ? "Creating..." : "Logging in...";
+  authSubmit.textContent = state.authMode === "signUp" ? "Creating..." : "Signing in...";
 
   try {
     if (state.authMode === "signUp") {
@@ -224,28 +227,32 @@ async function handleAuthSubmit(event) {
         throw error;
       }
 
-      if (!data.session) {
-        statusText.textContent =
-          "Account created. Check your email if confirmation is enabled, then log in.";
-        setAuthMode("signIn");
-      } else {
-        statusText.textContent = "Account created and signed in.";
-      }
+        if (!data.session) {
+          statusText.textContent =
+            "Account created. Check your email if confirmation is enabled, then log in.";
+          statusText.classList.remove("hidden");
+          setAuthMode("signIn");
+        } else {
+          statusText.textContent = "Account created and signed in.";
+          statusText.classList.add("hidden");
+        }
     } else {
       const { error } = await state.supabase.auth.signInWithPassword({ email, password });
       if (error) {
         throw error;
       }
 
-      statusText.textContent = "Logged in successfully.";
-    }
+        statusText.textContent = "Logged in successfully.";
+        statusText.classList.add("hidden");
+      }
 
     authForm.reset();
   } catch (error) {
     statusText.textContent = error instanceof Error ? error.message : "Authentication failed.";
+    statusText.classList.remove("hidden");
   } finally {
     authSubmit.disabled = false;
-    authSubmit.textContent = state.authMode === "signUp" ? "Create account" : "Log in";
+    authSubmit.textContent = state.authMode === "signUp" ? "Create account" : "Sign In";
   }
 }
 
@@ -256,11 +263,13 @@ async function handleLogout() {
 
   const { error } = await state.supabase.auth.signOut();
   statusText.textContent = error ? error.message : "Logged out.";
+  statusText.classList.remove("hidden");
 }
 
 function setActiveMode(mode) {
   state.activeMode = mode;
-  const meta = modeMeta[mode] || modeMeta.brainstorm;
+  const meta = modeMeta[mode] || modeMeta.chat;
+  const providerConfig = state.config?.providers?.[mode];
 
   for (const button of modeButtons) {
     button.classList.toggle("active", button.dataset.mode === mode);
@@ -268,6 +277,10 @@ function setActiveMode(mode) {
 
   modeDescription.textContent = meta.description;
   promptInput.placeholder = meta.placeholder;
+
+  if (providerConfig) {
+    modelBadge.textContent = providerConfig.model;
+  }
 }
 
 function updateCharacterCount() {
@@ -276,16 +289,12 @@ function updateCharacterCount() {
 }
 
 function applyHealthStatus(config) {
-  if (config.nvidiaConfigured && config.supabaseConfigured) {
-    statusPill.textContent = "Ready";
-    statusPill.classList.add("ready");
-    statusPill.classList.remove("warning");
-    return;
-  }
+  statusPill.textContent = "TRIVOX PRO";
+  statusPill.classList.remove("ready", "warning");
 
-  statusPill.textContent = "Setup needed";
-  statusPill.classList.add("warning");
-  statusPill.classList.remove("ready");
+  if (!config.nvidiaConfigured || !config.supabaseConfigured) {
+    statusText.textContent = "Finish your NVIDIA and Supabase setup to use all features.";
+  }
 }
 
 async function loadChats() {
@@ -302,6 +311,7 @@ async function loadChats() {
   if (error) {
     statusText.textContent =
       "Could not load chats. Run the SQL setup in supabase/schema.sql first.";
+    statusText.classList.remove("hidden");
     return;
   }
 
@@ -377,6 +387,7 @@ async function loadMessages(chatId) {
 
   if (error) {
     statusText.textContent = "Could not load messages for this chat.";
+    statusText.classList.remove("hidden");
     return;
   }
 
@@ -406,10 +417,7 @@ function renderMessages(pendingAssistantText = "") {
     });
   }
 
-  messageList.innerHTML = combinedMessages
-    .map((message) => renderMessageHtml(message))
-    .join("");
-
+  messageList.innerHTML = combinedMessages.map((message) => renderMessageHtml(message)).join("");
   messageList.scrollTop = messageList.scrollHeight;
 }
 
@@ -486,15 +494,18 @@ async function handleSendMessage(event) {
     await touchChat(chatId);
     await refreshChatState(chatId);
 
-    modelBadge.textContent = payload.model || state.config.model || "Unknown model";
+    const providerLabel = payload.provider ? `${payload.provider} / ` : "";
+    modelBadge.textContent = `${providerLabel}${payload.model || state.config.model || "Unknown model"}`;
     statusText.textContent = "Response saved to chat history.";
+    statusText.classList.add("hidden");
   } catch (error) {
     statusText.textContent = error instanceof Error ? error.message : "Could not send message.";
+    statusText.classList.remove("hidden");
     await refreshChatState(state.activeChatId);
   } finally {
     state.isSending = false;
     runButton.disabled = false;
-    runButton.textContent = "Send";
+    runButton.textContent = "↗";
   }
 }
 
@@ -518,6 +529,7 @@ async function createChat(firstPrompt) {
   if (error) {
     statusText.textContent =
       "Could not create a chat. Make sure the Supabase SQL schema has been applied.";
+    statusText.classList.remove("hidden");
     return null;
   }
 
@@ -569,28 +581,86 @@ async function copyLastAssistantMessage() {
 
   if (!lastAssistant?.content) {
     statusText.textContent = "There is no assistant response to copy yet.";
+    statusText.classList.remove("hidden");
     return;
   }
 
   try {
     await navigator.clipboard.writeText(lastAssistant.content);
     statusText.textContent = "Last assistant response copied.";
+    statusText.classList.remove("hidden");
   } catch {
     statusText.textContent = "Clipboard copy failed in this browser.";
+    statusText.classList.remove("hidden");
   }
 }
 
 function renderMessageHtml(message) {
   const isAssistant = message.role === "assistant";
+  const mode = message.mode || state.activeMode;
+
+  if (!isAssistant) {
+    return `
+      <article class="message-row user">
+        <div class="message-card">
+          <div class="message-bubble user">${escapeHtml(message.content || "")}</div>
+        </div>
+        <div class="message-avatar user">U</div>
+      </article>
+    `;
+  }
+
   return `
-    <article class="message-row">
-      <div class="message-avatar ${isAssistant ? "assistant" : ""}">${isAssistant ? "AI" : "You"}</div>
+    <article class="message-row assistant">
       <div class="message-card">
-        <p class="chat-role">${isAssistant ? "Assistant" : "You"}</p>
-        <div class="message-bubble ${isAssistant ? "assistant" : ""}">${escapeHtml(message.content || "")}</div>
+        <div class="message-header">
+          <div class="message-avatar">${getModeIcon(mode)}</div>
+          <p class="chat-role">${getModeLabel(mode)}</p>
+        </div>
+        ${renderAssistantBubble(message.content || "", mode)}
       </div>
     </article>
   `;
+}
+
+function renderAssistantBubble(content, mode) {
+  const safeContent = escapeHtml(content);
+
+  if (mode === "code") {
+    return `
+      <div class="message-bubble assistant code">
+        <pre><code>${safeContent}</code></pre>
+      </div>
+    `;
+  }
+
+  return `
+      <div class="message-bubble assistant ${escapeHtml(mode)}">
+        ${safeContent}
+      </div>
+  `;
+}
+
+function getModeLabel(mode) {
+  switch (mode) {
+    case "code":
+      return "CODE BOT";
+    case "research":
+      return "RESEARCH BOT";
+    default:
+      return "CHAT BOT";
+  }
+}
+
+function getModeIcon(mode) {
+  switch (mode) {
+    case "code":
+      return "{}";
+    case "research":
+      return "R";
+    default:
+      return "C";
+  }
 }
 
 function makeChatTitle(text) {
