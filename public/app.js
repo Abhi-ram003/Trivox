@@ -485,7 +485,7 @@ async function handleSendMessage(event) {
       }),
     });
 
-    const payload = await response.json();
+    const payload = await parseApiResponse(response);
     if (!response.ok) {
       throw new Error(payload.error || "Chat request failed.");
     }
@@ -507,6 +507,30 @@ async function handleSendMessage(event) {
     runButton.disabled = false;
     runButton.textContent = "↗";
   }
+}
+
+async function parseApiResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const rawText = await response.text();
+  const compactText = rawText.replace(/\s+/g, " ").trim();
+
+  if (response.status === 504) {
+    return {
+      error:
+        "The AI model took too long to respond. Try Chat Bot again, shorten the prompt, or use a faster model.",
+      raw: compactText,
+    };
+  }
+
+  return {
+    error: compactText || "Unexpected server response.",
+    raw: compactText,
+  };
 }
 
 function renderMessagesWithUserPrompt(promptMessage) {

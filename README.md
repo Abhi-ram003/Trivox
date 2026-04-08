@@ -19,7 +19,7 @@ This project is a 3-bot AI app with:
 Use these model ids in your environment:
 
 ```text
-CHAT_MODEL=mistralai/mistral-large-3-675b-instruct-2512
+CHAT_MODEL=meta/llama-3.3-70b-instruct
 CODE_MODEL=qwen/qwen3-coder-480b-a35b-instruct
 RESEARCH_MODEL=qwen/qwq-32b
 ```
@@ -32,7 +32,7 @@ NVIDIA_API_KEY=your_real_nvidia_key
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 
-CHAT_MODEL=mistralai/mistral-large-3-675b-instruct-2512
+CHAT_MODEL=meta/llama-3.3-70b-instruct
 CODE_MODEL=qwen/qwen3-coder-480b-a35b-instruct
 RESEARCH_MODEL=qwen/qwq-32b
 
@@ -41,7 +41,7 @@ PORT=3000
 
 ## What each bot does
 
-- `Chat Bot` for daily-use conversations, writing, and normal questions
+- `Chat Bot` for daily-use conversations, writing, and normal questions using Meta Llama 3.3 70B
 - `Code Bot` for code generation, debugging, and implementation help
 - `Research Bot` for deeper reasoning, comparisons, and structured analysis
 
